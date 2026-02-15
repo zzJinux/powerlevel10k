@@ -187,53 +187,81 @@ const char* LocalBranchName(const git_reference* ref) {
 }
 
 RemotePtr GetRemote(git_repository* repo, const git_reference* local) {
-  git_remote* remote;
-  git_buf symref = {};
-  if (git_branch_remote(&remote, &symref, repo, git_reference_name(local))) return nullptr;
-  ON_SCOPE_EXIT(&) {
-    git_remote_free(remote);
-    git_buf_free(&symref);
-  };
+  git_reference* upstream = nullptr;
+  if (git_branch_upstream(&upstream, local)) return nullptr;
+  ON_SCOPE_EXIT(&) { if (upstream) git_reference_free(upstream); };
 
-  git_reference* ref;
-  if (git_reference_lookup(&ref, repo, symref.ptr)) return nullptr;
-  ON_SCOPE_EXIT(&) { if (ref) git_reference_free(ref); };
+  git_buf remote_name_buf = {};
+  ON_SCOPE_EXIT(&) { git_buf_dispose(&remote_name_buf); };
+  if (git_branch_upstream_remote(&remote_name_buf, repo, git_reference_name(local))) return nullptr;
+
+  std::string name(remote_name_buf.ptr, remote_name_buf.size);
+
+  git_remote* remote = nullptr;
+  if (name != ".") {
+    if (git_remote_lookup(&remote, repo, name.c_str())) return nullptr;
+  }
+  ON_SCOPE_EXIT(&) { if (remote) git_remote_free(remote); };
 
   const char* branch = nullptr;
-  std::string name = remote ? git_remote_name(remote) : ".";
-  if (git_branch_name(&branch, ref)) {
+  if (git_branch_name(&branch, upstream)) {
     branch = "";
-  } else if (remote) {
-    VERIFY(std::strstr(branch, name.c_str()) == branch);
-    VERIFY(branch[name.size()] == '/');
+  } else if (remote && std::strstr(branch, name.c_str()) == branch &&
+             branch[name.size()] == '/') {
     branch += name.size() + 1;
   }
 
   auto res = std::make_unique<Remote>();
   res->name = std::move(name);
-  res->branch = branch;
+  res->branch = branch ? branch : "";
   res->url = remote ? (git_remote_url(remote) ?: "") : "";
-  res->ref = std::exchange(ref, nullptr);
+  res->ref = std::exchange(upstream, nullptr);
   return RemotePtr(res.release());
 }
 
 PushRemotePtr GetPushRemote(git_repository* repo, const git_reference* local) {
-  git_remote* remote;
-  git_buf symref = {};
-  if (git_branch_push_remote(&remote, &symref, repo, git_reference_name(local))) return nullptr;
-  ON_SCOPE_EXIT(&) {
-    git_remote_free(remote);
-    git_buf_free(&symref);
-  };
+  if (!git_reference_is_branch(local)) return nullptr;
+  const char* local_branch = git_reference_shorthand(local);
+  if (!local_branch || !*local_branch) return nullptr;
 
-  git_reference* ref;
-  if (git_reference_lookup(&ref, repo, symref.ptr)) return nullptr;
+  git_config* cfg;
+  if (git_repository_config(&cfg, repo)) return nullptr;
+  ON_SCOPE_EXIT(=) { git_config_free(cfg); };
+
+  std::string push_remote_name;
+  const char* val = nullptr;
+  std::string key = std::string("branch.") + local_branch + ".pushRemote";
+  if (!git_config_get_string(&val, cfg, key.c_str())) {
+    push_remote_name = val;
+  } else if (!git_config_get_string(&val, cfg, "remote.pushDefault")) {
+    push_remote_name = val;
+  } else {
+    git_buf buf = {};
+    int err = git_branch_upstream_remote(&buf, repo, git_reference_name(local));
+    if (buf.ptr) push_remote_name.assign(buf.ptr, buf.size);
+    git_buf_dispose(&buf);
+    if (err) return nullptr;
+  }
+  if (push_remote_name.empty()) return nullptr;
+
+  git_remote* remote = nullptr;
+  if (push_remote_name != ".") {
+    if (git_remote_lookup(&remote, repo, push_remote_name.c_str())) return nullptr;
+  }
+  ON_SCOPE_EXIT(&) { if (remote) git_remote_free(remote); };
+
+  std::string remote_ref;
+  if (push_remote_name == ".") {
+    remote_ref = std::string("refs/heads/") + local_branch;
+  } else {
+    remote_ref = "refs/remotes/" + push_remote_name + "/" + local_branch;
+  }
+  git_reference* ref = nullptr;
+  if (git_reference_lookup(&ref, repo, remote_ref.c_str())) return nullptr;
   ON_SCOPE_EXIT(&) { if (ref) git_reference_free(ref); };
 
-  std::string name = remote ? git_remote_name(remote) : ".";
-
   auto res = std::make_unique<PushRemote>();
-  res->name = std::move(name);
+  res->name = std::move(push_remote_name);
   res->url = remote ? (git_remote_url(remote) ?: "") : "";
   res->ref = std::exchange(ref, nullptr);
   return PushRemotePtr(res.release());

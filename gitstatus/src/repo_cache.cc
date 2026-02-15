@@ -30,27 +30,29 @@ namespace gitstatus {
 namespace {
 
 void GitDirs(const char* dir, bool from_dotgit, std::string& gitdir, std::string& workdir) {
-  git_buf gitdir_buf = {};
-  git_buf workdir_buf = {};
-  ON_SCOPE_EXIT(&) {
-    git_buf_free(&gitdir_buf);
-    git_buf_free(&workdir_buf);
-  };
   int flags = from_dotgit ? GIT_REPOSITORY_OPEN_NO_SEARCH | GIT_REPOSITORY_OPEN_NO_DOTGIT : 0;
-  switch (git_repository_discover_ex(&gitdir_buf, &workdir_buf, NULL, NULL, dir, flags, nullptr)) {
+  git_repository* repo = nullptr;
+  switch (git_repository_open_ext(&repo, dir, flags, nullptr)) {
     case 0:
-      gitdir.assign(gitdir_buf.ptr, gitdir_buf.size);
-      workdir.assign(workdir_buf.ptr, workdir_buf.size);
-      VERIFY(!gitdir.empty() && gitdir.front() == '/' && gitdir.back() == '/');
-      VERIFY(!workdir.empty() && workdir.front() == '/' && workdir.back() == '/');
       break;
     case GIT_ENOTFOUND:
       gitdir.clear();
       workdir.clear();
-      break;
+      return;
     default:
       LOG(ERROR) << "git_repository_open_ext: " << Print(dir) << ": " << GitError();
       throw Exception();
+  }
+  ON_SCOPE_EXIT(=) { git_repository_free(repo); };
+  const char* gd = git_repository_path(repo);
+  const char* wd = git_repository_workdir(repo);
+  if (gd) gitdir = gd; else gitdir.clear();
+  if (wd) workdir = wd; else workdir.clear();
+  if (!gitdir.empty()) {
+    VERIFY(gitdir.front() == '/' && gitdir.back() == '/');
+  }
+  if (!workdir.empty()) {
+    VERIFY(workdir.front() == '/' && workdir.back() == '/');
   }
 }
 

@@ -101,7 +101,7 @@ fi
 
 zmodload zsh/system
 
-local -r git_url='https://github.com/romkatv/gitstatus.git'
+local -r git_url='https://github.com/zzjinux/gitstatus.git'
 
 local -rA assets=(
   # target kernel-arch   hostname of the build machine

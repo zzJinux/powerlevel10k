@@ -333,7 +333,7 @@ END
         [ "$1" = 1 -a -z "$hash" -o "$hash" = "$sha256" ]
       }
 
-      local url1="https://github.com/romkatv/gitstatus/releases/download/$version/$file.tar.gz"
+      local url1="https://github.com/zzjinux/gitstatus/releases/download/$version/$file.tar.gz"
       local url2="https://gitee.com/romkatv/gitstatus/raw/release-$version/release/$file.tar.gz"
       local sig='INT QUIT TERM ILL PIPE'
 
@@ -465,7 +465,7 @@ END
 
   >&"$e" printf 'There is no prebuilt \033[32mgitstatusd\033[0m for \033[1m%s\033[0m.\n' "$uname_s $uname_m"
   >&"$e" printf '\n'
-  >&"$e" printf 'See: \033[4mhttps://github.com/romkatv/gitstatus#compiling\033[0m\n'
+  >&"$e" printf 'See: \033[4mhttps://github.com/zzjinux/gitstatus#compiling\033[0m\n'
   return 1
 }
 
