@@ -1,4 +1,4 @@
-# 4
+# 5
 #
 # This file is used by ./install and indirectly by shell bindings.
 #
@@ -10,7 +10,7 @@
 # Official gitstatusd binaries.
 uname_s_glob="cygwin_nt-10.0"; uname_m_glob="i686";    file="gitstatusd-${uname_s}-${uname_m}";     version="v1.5.4"; sha256="5a8a809dcebdb6aa9b47d37e086c0485424a9d9c136770eec3c26cedf5bb75e3";
 uname_s_glob="cygwin_nt-10.0"; uname_m_glob="x86_64";  file="gitstatusd-${uname_s}-${uname_m}";     version="v1.5.1"; sha256="c84cade0d6b86e04c27a6055f45851f6b46d6b88ba58772f7ca8ef4d295c800f";
-uname_s_glob="darwin";         uname_m_glob="arm64";   file="gitstatusd-${uname_s}-${uname_m}";     version="zzjinux-v1.0"; sha256="8385f10992368c72ecd1841858c551fe7a8aa5391f8bd503aea90467fbe21b5c";
+uname_s_glob="darwin";         uname_m_glob="arm64";   file="gitstatusd-${uname_s}-${uname_m}";     version="zzjinux-v1.1"; sha256="87e6b9d37e3f401e3692199934430cc256757095ca56144a30c52fbe2e56c84e";
 uname_s_glob="darwin";         uname_m_glob="x86_64";  file="gitstatusd-${uname_s}-${uname_m}";     version="v1.5.4"; sha256="9fd3913ec1b6b856ab6e08a99a2343f0e8e809eb6b62ca4b0963163656c668e6";
 uname_s_glob="freebsd";        uname_m_glob="amd64";   file="gitstatusd-${uname_s}-${uname_m}";     version="v1.5.4"; sha256="8e57ad642251e5acfa430aed82cd4ffe103db0bfadae4a15ccaf462c455d0442";
 uname_s_glob="linux";          uname_m_glob="aarch64"; file="gitstatusd-${uname_s}-${uname_m}";     version="v1.5.4"; sha256="32b57eb28bf6d80b280e4020a0045184f8ca897b20b570c12948aa6838673225";

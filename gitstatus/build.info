@@ -3,7 +3,7 @@
 #
 # This value is also read by shell bindings (indirectly, through
 # ./install) when using GITSTATUS_DAEMON or usrbin/gitstatusd.
-gitstatus_version="zzjinux-v1.0"
+gitstatus_version="zzjinux-v1.1"
 
 # libgit2 is a build time dependency of gitstatusd. The values of
 # libgit2_version and libgit2_sha256 are read by ./build.
@@ -21,7 +21,7 @@ gitstatus_version="zzjinux-v1.0"
 #
 # This build uses a custom libgit2 fork:
 #   https://github.com/zzjinux/libgit2
-#   Version: v1.9.2-gitstatus-4e9a593
-#   (upstream v1.9.2 + custom patches for GIT_OPT_DISABLE_READNG_PACKED_TAGS)
-libgit2_version="1.9.2-gitstatus-4e9a593"
-libgit2_sha256="94639e43650623177c3bbd71887198a1cafbb2e19c1c9e154a3c299322436123"
+#   Version: v1.9.2-gitstatus-1-766914365
+#   (upstream v1.9.2 + custom patches)
+libgit2_version="1.9.2-gitstatus-1-766914365"
+libgit2_sha256="ef2bfb5df5c94b5c3feb75253ba29c1d91a6deed47e2551c4d70eb0b130a1d30"
